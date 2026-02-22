@@ -1,0 +1,603 @@
+﻿using Domain.AcademicManagement.Aggregate;
+using Domain.AIManagement.Aggregate;
+using Domain.AIManagement.Entity;
+using Domain.AuditManagement.Aggregate;
+using Domain.CourseManagement.Aggregate;
+using Domain.CourseManagement.Entity;
+using Domain.EnrollmentManagement.Aggregate;
+using Domain.EnrollmentManagement.Entity;
+using Domain.IdentityManagement.Aggregate;
+using Domain.OrderManagement.Aggregate;
+using Microsoft.EntityFrameworkCore;
+
+namespace DataAccessLayer.Persistence
+{
+    public class EducationPlatformDBContext : DbContext
+    {
+        public EducationPlatformDBContext(
+            DbContextOptions<EducationPlatformDBContext> options)
+            : base(options) { }
+
+        // ====================
+        // Academic Management
+        // ====================
+        public DbSet<Grade> Grades => Set<Grade>();
+        public DbSet<Subject> Subjects => Set<Subject>();
+
+        // ====================
+        // Identity Management
+        // ====================
+        public DbSet<User> Users => Set<User>();
+
+        // ====================
+        // Course Management
+        // ====================
+        public DbSet<Course> Courses => Set<Course>();
+        public DbSet<ViolatedPolicy> ViolatedPolicies => Set<ViolatedPolicy>();
+        public DbSet<Lesson> Lessons => Set<Lesson>();
+        public DbSet<Quiz> Quizzes => Set<Quiz>();
+        public DbSet<Policy> Policies => Set<Policy>();
+        public DbSet<PolicyRule> PolicyRules => Set<PolicyRule>();
+
+        // ====================
+        // Payment Management
+        // ====================
+        public DbSet<Order> Orders => Set<Order>();
+
+        // ====================
+        // Enrollment Management
+        // ====================
+        public DbSet<Enrollment> Enrollments => Set<Enrollment>();
+        public DbSet<CourseProgress> CourseProgresses => Set<CourseProgress>();
+        public DbSet<LessonProgress> LessonProgresses => Set<LessonProgress>();
+        public DbSet<QuizProgress> QuizProgresses => Set<QuizProgress>();
+
+        // ====================
+        // AI Management
+        // ====================
+        public DbSet<AIImprovementSession> AIImprovementSessions => Set<AIImprovementSession>();
+        public DbSet<AIAssignment> AIAssignments => Set<AIAssignment>();
+        public DbSet<AISubmission> AISubmissions => Set<AISubmission>();
+
+        // ====================
+        // Audit Management
+        // ====================
+        public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // ====================
+            // Grade (Aggregate Root)
+            // ====================
+            modelBuilder.Entity<Grade>(entity =>
+            {
+                entity.HasKey(g => g.GradeID);
+
+                entity.Property(g => g.Name)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(g => g.IsActive)
+                      .HasDefaultValue(true);
+
+                entity.HasIndex(g => g.Name)
+                      .IsUnique();
+            });
+
+            // ====================
+            // Subject (Aggregate Root)
+            // ====================
+            modelBuilder.Entity<Subject>(entity =>
+            {
+                entity.HasKey(s => s.SubjectID);
+
+                entity.Property(s => s.Code)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(s => s.Name)
+                      .IsRequired()
+                      .HasMaxLength(150);
+
+                entity.Property(s => s.IsActive)
+                      .HasDefaultValue(true);
+
+                entity.HasIndex(s => s.Code)
+                      .IsUnique();
+            });
+
+            // ====================
+            // User (Aggregate Root)
+            // ====================
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.UserID);
+
+                entity.Property(u => u.Email)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(u => u.Phone)
+                      .IsRequired()
+                      .HasMaxLength(20);
+
+                entity.Property(u => u.Name)
+                      .IsRequired()
+                      .HasMaxLength(150);
+
+                entity.Property(u => u.Bio)
+                      .HasMaxLength(1000);
+
+                entity.Property(u => u.Role)
+                      .IsRequired()
+                      .HasConversion<int>();
+
+                entity.Property(u => u.IsVerified)
+                      .HasDefaultValue(false);
+
+                entity.Property(u => u.EmailOtp);
+
+                entity.Property(u => u.EmailOtpExpiresAt);
+
+                entity.Property(u => u.IsActive)
+                      .HasDefaultValue(true);
+
+                // ---------- Password (Value Object)
+                entity.OwnsOne(u => u.Password, pw =>
+                {
+                    pw.Property(p => p.Hash)
+                      .HasColumnName("PasswordHash")
+                      .IsRequired()
+                      .HasMaxLength(500);
+                });
+
+                // ---------- RefreshToken (Value Object)
+                entity.OwnsOne(u => u.RefreshToken, rt =>
+                {
+                    rt.Property(r => r.Hash)
+                      .HasColumnName("RefreshTokenHash")
+                      .HasMaxLength(500);
+
+                    rt.Property(r => r.ExpiresAt)
+                      .HasColumnName("RefreshTokenExpiresAt");
+                });
+
+                entity.HasIndex(u => u.Email)
+                      .IsUnique();
+
+                entity.HasIndex(u => u.Phone)
+                      .IsUnique();
+            });
+
+            // ====================
+            // Course (Aggregate Root)
+            // ====================
+            modelBuilder.Entity<Course>(entity =>
+            {
+                entity.HasKey(c => c.CourseID);
+
+                entity.Property(c => c.Title)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(c => c.Description)
+                      .IsRequired()
+                      .HasMaxLength(4000);
+
+                entity.Property(c => c.Status)
+                      .IsRequired();
+
+                entity.Property(c => c.RejectedAt);
+                entity.Property(c => c.AdminNote);
+                entity.Property(c => c.PublishedAt);
+
+                entity.Property(c => c.ThumbnailName)
+                      .HasMaxLength(255);
+
+                entity.Property(c => c.TeacherID).IsRequired();
+                entity.Property(c => c.GradeID).IsRequired();
+                entity.Property(c => c.SubjectID).IsRequired();
+
+                // ----- CoursePrice (Value Object)
+                entity.OwnsOne(c => c.Price, price =>
+                {
+                    price.Property(p => p.Amount)
+                         .HasColumnName("PriceAmount")
+                         .IsRequired();
+                });
+
+                // ----- Violated Policy (Internal Entities)
+                entity.HasMany(c => c.ViolatedPolicies)
+                      .WithOne()
+                      .HasForeignKey(l => l.CourseID)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // ----- Lessons (Internal Entities)
+                entity.HasMany(c => c.Lessons)
+                      .WithOne()
+                      .HasForeignKey(l => l.CourseID)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // ----- Populate (Other Domain)
+                entity.HasOne(c => c.Teacher)
+                      .WithMany()
+                      .HasForeignKey(c => c.TeacherID)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(c => c.Grade)
+                      .WithMany()
+                      .HasForeignKey(c => c.GradeID)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(c => c.Subject)
+                      .WithMany()
+                      .HasForeignKey(c => c.SubjectID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ====================
+            // Violated Policy (Internal Entity)
+            // ====================
+            modelBuilder.Entity<ViolatedPolicy>(entity =>
+            {
+                entity.HasKey(l => l.ViolatedPolicyID);
+
+                entity.Property(l => l.PolicyID)
+                      .IsRequired();
+
+                entity.Property(l => l.CourseID)
+                      .IsRequired();
+
+                entity.HasOne(l => l.Policy)
+                      .WithMany()
+                      .HasForeignKey(q => q.PolicyID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ====================
+            // Lesson (Internal Entity)
+            // ====================
+            modelBuilder.Entity<Lesson>(entity =>
+            {
+                entity.HasKey(l => l.LessonID);
+
+                entity.Property(l => l.Title)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(l => l.VideoUrl)
+                      .IsRequired()
+                      .HasMaxLength(1000);
+
+                entity.Property(l => l.Order)
+                      .IsRequired();
+
+                entity.Property(l => l.IsViolated);
+                entity.Property(l => l.AdminNote);
+
+                entity.Property(l => l.CourseID)
+                      .IsRequired();
+
+                entity.HasMany(l => l.Quizzes)
+                      .WithOne()
+                      .HasForeignKey(q => q.LessonID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ====================
+            // Quiz (Internal Entity)
+            // ====================
+            modelBuilder.Entity<Quiz>(entity =>
+            {
+                entity.HasKey(q => q.QuizID);
+
+                entity.Property(q => q.Question)
+                      .IsRequired()
+                      .HasMaxLength(2000);
+
+                entity.Property(q => q.Note)
+                      .HasMaxLength(2000);
+
+                entity.Property(q => q.LessonID)
+                      .IsRequired();
+
+                // ----- QuizAnswer (Value Object)
+                entity.OwnsOne(q => q.Answer, answer =>
+                {
+                    answer.Property(a => a.Type)
+                          .HasColumnName("AnswerType")
+                          .IsRequired();
+
+                    answer.Property(a => a.CorrectAnswers)
+                          .HasColumnName("CorrectAnswers")
+                          .HasConversion(
+                              v => string.Join("|||", v), // <-- changed delimiter
+                              v => v.Split(new[] { "|||" }, StringSplitOptions.None)
+                                    .Select(s => s.Trim())
+                                    .ToList())
+                          .IsRequired();
+
+                    answer.Property(a => a.Options)
+                          .HasColumnName("Options")
+                          .HasConversion(
+                              v => v != null ? string.Join("|||", v) : null,
+                              v => !string.IsNullOrWhiteSpace(v)
+                                   ? v.Split(new[] { "|||" }, StringSplitOptions.None).ToList()
+                                   : new List<string>())
+                          .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<IEnumerable<string>>(
+                              (c1, c2) => c1.SequenceEqual(c2),
+                              c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                              c => c.ToList()));
+                });
+            });
+
+            // ====================
+            // Policy (Aggregate Root)
+            // ====================
+            modelBuilder.Entity<Policy>(entity =>
+            {
+                entity.HasKey(p => p.PolicyID);
+
+                entity.Property(p => p.Name)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(p => p.IsActive)
+                      .HasDefaultValue(true);
+
+                entity.HasMany(p => p.PolicyRules)
+                      .WithOne()
+                      .HasForeignKey(r => r.PolicyID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ====================
+            // Rule (Internal Entity)
+            // ====================
+            modelBuilder.Entity<PolicyRule>(entity =>
+            {
+                entity.HasKey(r => r.PolicyRuleID);
+
+                entity.Property(r => r.Code)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(r => r.Description)
+                      .IsRequired()
+                      .HasMaxLength(2000);
+
+                entity.Property(r => r.PolicyID)
+                      .IsRequired();
+            });
+
+            // ====================
+            // Payment (Aggregate Root)
+            // ====================
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasKey(p => p.OrderID);
+
+                entity.Property(p => p.OrderCode)
+                      .IsRequired();
+
+                entity.Property(p => p.StudentID)
+                      .IsRequired();
+
+                entity.Property(p => p.CourseID)
+                      .IsRequired();
+
+                entity.Property(p => p.PlatformAmount)
+                      .IsRequired()
+                      .HasPrecision(18, 2);
+
+                entity.Property(p => p.TeacherAmount)
+                      .IsRequired()
+                      .HasPrecision(18, 2);
+
+                entity.Property(p => p.Method)
+                      .IsRequired();
+
+                entity.Property(p => p.Status)
+                      .IsRequired();
+
+                entity.Property(p => p.CreatedAt)
+                      .IsRequired();
+
+                entity.Property(p => p.PaidAt);
+            });
+
+            // ====================
+            // Enrollment (Aggregate Root)
+            // ====================
+            modelBuilder.Entity<Enrollment>(entity =>
+            {
+                entity.HasKey(e => e.EnrollmentID);
+
+                entity.Property(e => e.StudentID).IsRequired();
+                entity.Property(e => e.CourseID).IsRequired();
+
+                entity.Property(e => e.Status).IsRequired();
+                entity.Property(e => e.EnrolledAt).IsRequired();
+                entity.Property(e => e.CompletedAt);
+
+                // 1 - 1 with CourseProgress
+                entity.HasOne(e => e.CourseProgress)
+                      .WithOne()
+                      .HasForeignKey<CourseProgress>(cp => cp.EnrollmentID)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(lp => lp.Course)
+                      .WithMany()
+                      .HasForeignKey(lp => lp.CourseID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ====================
+            // CourseProgress (Internal Entity)
+            // ====================
+            modelBuilder.Entity<CourseProgress>(entity =>
+            {
+                entity.HasKey(cp => cp.CourseProgressID);
+
+                entity.Property(cp => cp.CompletionRate)
+                      .HasPrecision(5, 2);
+
+                entity.Property(cp => cp.IsCompleted).IsRequired();
+                entity.Property(cp => cp.EnrollmentID).IsRequired();
+
+                entity.HasMany(cp => cp.LessonProgresses)
+                      .WithOne()
+                      .HasForeignKey(lp => lp.CourseProgressID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ====================
+            // LessonProgress (Internal Entity)
+            // ====================
+            modelBuilder.Entity<LessonProgress>(entity =>
+            {
+                entity.HasKey(lp => lp.LessonProgressID);
+
+                entity.Property(lp => lp.IsCompleted).IsRequired();
+                entity.Property(lp => lp.CompletedAt);
+                entity.Property(lp => lp.CourseProgressID).IsRequired();
+                entity.Property(lp => lp.LessonID).IsRequired();
+
+                entity.HasMany(lp => lp.QuizProgresses)
+                      .WithOne()
+                      .HasForeignKey(qp => qp.LessonProgressID)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(lp => lp.Lesson)
+                      .WithMany()
+                      .HasForeignKey(lp => lp.LessonID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ====================
+            // QuizProgress (Internal Entity)
+            // ====================
+            modelBuilder.Entity<QuizProgress>(entity =>
+            {
+                entity.HasKey(qp => qp.QuizProgressID);
+
+                entity.Property(qp => qp.AttemptCount).IsRequired();
+                entity.Property(qp => qp.IsCorrect).IsRequired();
+                entity.Property(qp => qp.LastAttemptAt);
+                entity.Property(qp => qp.QuizID).IsRequired();
+                entity.Property(qp => qp.LessonProgressID).IsRequired();
+
+                entity.HasOne(lp => lp.Quiz)
+                      .WithMany()
+                      .HasForeignKey(lp => lp.QuizID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ====================
+            // AIImprovementSession (Aggregate Root)
+            // ====================
+            modelBuilder.Entity<AIImprovementSession>(entity =>
+            {
+                entity.HasKey(s => s.SessionID);
+
+                entity.Property(s => s.Status)
+                      .IsRequired();
+
+                entity.Property(s => s.Insight)
+                      .HasMaxLength(2000);
+
+                entity.Property(s => s.CreatedAt)
+                      .IsRequired();
+
+                entity.Property(s => s.CompletedAt);
+
+                entity.Property(s => s.StudentID)
+                      .IsRequired();
+
+                entity.Property(s => s.CourseID)
+                      .IsRequired();
+
+                entity.Property(s => s.EnrollmentID)
+                      .IsRequired();
+
+                // ----- AIAssignments (Internal Entity)
+                entity.HasMany(s => s.AIAssignments)
+                      .WithOne()
+                      .HasForeignKey(a => a.SessionID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+
+            // ====================
+            // AIAssignment (Internal Entity)
+            // ====================
+            modelBuilder.Entity<AIAssignment>(entity =>
+            {
+                entity.HasKey(a => a.AIAssignmentID);
+
+                entity.Property(a => a.Question)
+                      .IsRequired()
+                      .HasMaxLength(2000);
+
+                entity.Property(a => a.Guidance)
+                      .HasMaxLength(2000);
+
+                entity.Property(a => a.SessionID)
+                      .IsRequired();
+
+                entity.Property(a => a.LessonID)
+                      .IsRequired();
+
+                // ----- AISubmission (Internal Entity)
+                entity.HasOne(a => a.AISubmission)
+                      .WithOne()
+                      .HasForeignKey<AISubmission>(s => s.AIAssignmentID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+
+            // ====================
+            // AISubmission (Internal Entity)
+            // ====================
+            modelBuilder.Entity<AISubmission>(entity =>
+            {
+                entity.HasKey(s => s.AISubmissionID);
+
+                entity.Property(s => s.Answer)
+                      .IsRequired()
+                      .HasMaxLength(4000);
+
+                entity.Property(s => s.Feedback)
+                      .HasMaxLength(2000);
+
+                entity.Property(s => s.IsCorrect)
+                      .IsRequired();
+
+                entity.Property(s => s.SubmittedAt)
+                      .IsRequired();
+
+                entity.Property(s => s.AIAssignmentID)
+                      .IsRequired();
+            });
+
+            // ====================
+            // AuditLog (Aggregate Root)
+            // ====================
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.HasKey(a => a.AuditLogId);
+
+                entity.Property(a => a.EntityName).IsRequired();
+                entity.Property(a => a.Action).IsRequired();
+                entity.Property(a => a.PerformedBy).HasMaxLength(100);
+                entity.Property(a => a.OldValue);
+                entity.Property(a => a.NewValue);
+
+                entity.Property(a => a.Timestamp)
+                      .HasDefaultValueSql("GETUTCDATE()");
+            });
+        }
+    }
+}

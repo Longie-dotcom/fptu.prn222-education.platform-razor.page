@@ -1,0 +1,11 @@
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\bin\Debug\net9.0\BussinessLayer.deps.json
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\bin\Debug\net9.0\BussinessLayer.dll
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\bin\Debug\net9.0\BussinessLayer.pdb
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\obj\Debug\net9.0\BussinessLayer.GeneratedMSBuildEditorConfig.editorconfig
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\obj\Debug\net9.0\BussinessLayer.AssemblyInfoInputs.cache
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\obj\Debug\net9.0\BussinessLayer.AssemblyInfo.cs
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\obj\Debug\net9.0\BussinessLayer.csproj.CoreCompileInputs.cache
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\obj\Debug\net9.0\BussinessLayer.dll
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\obj\Debug\net9.0\refint\BussinessLayer.dll
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\obj\Debug\net9.0\BussinessLayer.pdb
+D:\GitHub\fptu.prn222-education.platform-asp.mvc\EducationPlatform\BussinessLayer\obj\Debug\net9.0\ref\BussinessLayer.dll
