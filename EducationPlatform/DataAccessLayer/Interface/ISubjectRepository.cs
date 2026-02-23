@@ -1,4 +1,5 @@
 ﻿using Domain.AcademicManagement.Aggregate;
+using Domain.AcademicManagement.Entity;
 
 namespace DataAccessLayer.Interface
 {
@@ -6,5 +7,8 @@ namespace DataAccessLayer.Interface
         IGenericRepository<Subject>,
         IRepositoryBase
     {
+        Task<IEnumerable<DefaultLesson>> GetDefaultLessons(
+            Guid subjectId,
+            Guid gradeId);
     }
 }

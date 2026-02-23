@@ -52,6 +52,22 @@ namespace BusinessLayer.Implementation
 
             return mapper.Map<IEnumerable<GradeDTO>>(list);
         }
+
+        public async Task<IEnumerable<DefaultLessonDTO>> GetDefaultLessons(
+            Guid subjectId, 
+            Guid gradeId)
+        {
+            // Validate default lessons list existence
+            var list = await unitOfWork
+                .GetRepository<ISubjectRepository>()
+                .GetDefaultLessons(subjectId, gradeId);
+
+            if (list == null || !list.Any())
+                throw new NotFound(
+                    "Default lessons list is empty or was not found");
+
+            return mapper.Map<IEnumerable<DefaultLessonDTO>>(list);
+        }
         #endregion
     }
 }

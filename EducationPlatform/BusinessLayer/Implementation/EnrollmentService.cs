@@ -75,6 +75,33 @@ namespace BusinessLayer.Implementation
             return dto;
         }
 
+        public async Task<IEnumerable<StudentWeaknessDTO>> GetStudentWeakness(Guid studentId)
+        {
+            var list = await unitOfWork
+                .GetRepository<IEnrollmentRepository>()
+                .GetStudentStatistic(studentId);
+
+            if (list == null || !list.Any())
+                throw new NotFound("Student statistic is not found or empty");
+
+            var weakness = list
+                .SelectMany(e => e.CourseProgress.LessonProgresses
+                    .Select(lp => new StudentWeaknessDTO
+                    {
+                        CourseId = e.CourseID,
+                        CourseTitle = e.Course.Title,
+                        LessonId = lp.LessonID,
+                        LessonTitle = lp.Lesson.Title,
+                        CompletionRate = lp.IsCompleted ? 100 : 0,
+                        FailedQuizCount = lp.QuizProgresses.Count(q => !q.IsCorrect)
+                    }))
+                .Where(x => x.CompletionRate < 100 || x.FailedQuizCount > 0)
+                .OrderByDescending(x => x.FailedQuizCount)
+                .ThenBy(x => x.CompletionRate);
+
+            return weakness;
+        }
+
         public async Task UpdateLessonProgress(
             Guid enrollmentId, Guid lessonId, double playedSeconds, double duration, bool isCompleted, Guid callerId)
         {

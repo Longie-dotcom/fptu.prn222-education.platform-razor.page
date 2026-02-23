@@ -10,6 +10,9 @@ namespace BusinessLayer.Interface
         Task<EnrollmentDetailDTO> GetEnrollmentDetail(
             Guid enrollmentId);
 
+        Task<IEnumerable<StudentWeaknessDTO>> GetStudentWeakness(
+            Guid studentId);
+
         Task UpdateLessonProgress(
             Guid enrollmentId, 
             Guid lessonId, 

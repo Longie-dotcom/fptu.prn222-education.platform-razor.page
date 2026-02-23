@@ -11,7 +11,10 @@ namespace DataAccessLayer.Interface
 
         Task<Enrollment?> GetEnrollmentDetailByID(
             Guid enrollmentId);
-        
+
+        Task<IEnumerable<Enrollment>> GetStudentStatistic(
+            Guid studentId);
+
         Task<Enrollment?> GetEnrollmentForUpdate(
             Guid enrollmentId);
 

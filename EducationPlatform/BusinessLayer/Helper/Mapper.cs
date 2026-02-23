@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLayer.DTO;
 using Domain.AcademicManagement.Aggregate;
+using Domain.AcademicManagement.Entity;
 using Domain.CourseManagement.Aggregate;
 using Domain.CourseManagement.Entity;
 using Domain.CourseManagement.ValueObject;
@@ -21,6 +22,7 @@ namespace BusinessLayer.Helper
             // ----- Academic Domain -----
             CreateMap<Subject, SubjectDTO>();
             CreateMap<Grade, GradeDTO>();
+            CreateMap<DefaultLesson, DefaultLessonDTO>();
 
             // ----- Order Domain -----
             CreateMap<Order,  OrderDTO>();

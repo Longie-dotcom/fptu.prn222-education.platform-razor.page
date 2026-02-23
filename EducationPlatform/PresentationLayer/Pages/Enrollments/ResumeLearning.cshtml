@@ -1,0 +1,291 @@
+﻿@page
+@model PresentationLayer.Pages.Enrollments.ResumeLearningModel
+@using Domain.EnrollmentManagement.Enum
+@using System.Text.Json
+@{
+    ViewBag.Title = Model.Enrollment.Course?.Title;
+    var primaryColor = "#4834d4";
+
+    var settings = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    var lessonsJson = JsonSerializer.Serialize(Model.Enrollment.Course.Lessons, settings);
+    var progressJson = JsonSerializer.Serialize(Model.Enrollment.CourseProgress.LessonProgresses, settings);
+}
+
+@Html.AntiForgeryToken()
+<input type="hidden" id="currentLessonId" value="" />
+
+<div class="hide-scroll" style="display: flex; height: 75vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #f8f9fa;">
+
+    @* Main Content Area *@
+    <div class="hide-scroll" style="flex: 1; overflow-y: auto; padding: 40px; height: 70vh;">
+
+        <div id="mediaContainer" style="background: #000; border-radius: 12px; aspect-ratio: 16/9; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <div id="welcomeState" style="text-align: center; color: white;">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🎓</div>
+                <h3>Welcome back!</h3>
+                <p style="color: #a4b0be;">Pick up where you left off by selecting a lesson.</p>
+            </div>
+        </div>
+
+        @* Quiz UI *@
+        <div id="quizContainer" style="display: none; margin-top: 30px; background: white; padding: 35px; border-radius: 12px; border: 1px solid #eee; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3 style="margin: 0; color: #2d3436;">Lesson Assessment</h3>
+            </div>
+            <div id="quizBody"></div>
+            <button onclick="submitQuizAttempt()" style="margin-top: 25px; background: @primaryColor; color: white; border: none; padding: 12px 40px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                Submit Answers
+            </button>
+        </div>
+
+        <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+            <h2 id="lessonDisplayTitle" style="color: #2d3436; font-weight: 700;">@Model.Enrollment.Course.Title</h2>
+            <div id="lessonDescription" style="color: #636e72; line-height: 1.7;">
+                @Model.Enrollment.Course.Description
+            </div>
+        </div>
+    </div>
+
+    @* Sidebar *@
+    <div class="hide-scroll" style="width: 600px; height: 70vh; background: white; border-left: 1px solid #eee; display: flex; flex-direction: column; position: relative; z-index: 10;">
+        <div style="padding: 25px; border-bottom: 1px solid #eee; background: #fff;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="margin: 0; color: #2d3436;">Course Content</h4>
+                <span style="font-size: 0.8rem; font-weight: 800; color: @primaryColor;">@Model.Enrollment.CourseProgress.CompletionRate%</span>
+            </div>
+            <div style="height: 6px; background: #f1f2f6; border-radius: 10px; overflow: hidden;">
+                <div style="width: @Model.Enrollment.CourseProgress.CompletionRate%; height: 100%; background: @primaryColor;"></div>
+            </div>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto;">
+            @foreach (var lesson in Model.Enrollment.Course.Lessons.OrderBy(l => l.Order))
+            {
+                var progress = Model.Enrollment.CourseProgress.LessonProgresses.FirstOrDefault(p => p.LessonID == lesson.LessonID);
+                bool isCompleted = progress?.IsCompleted ?? false;
+                var safeId = lesson.LessonID.ToString().ToLower();
+
+                <div class="sidebar-item" id="lesson-@safeId" onclick="loadLessonData('@safeId')"
+                     style="padding: 20px 25px; border-bottom: 1px solid #f8f9fa; cursor: pointer; transition: 0.2s; display: flex; gap: 15px; border-left: 4px solid transparent;">
+                    <div style="margin-top: 4px;">
+                        @if (isCompleted)
+                        {
+                            <div style="color: #16a34a; font-size: 1.2rem;">✔</div>
+                        }
+                        else
+                        {
+
+                            <div style="width: 18px; height: 18px; border: 2px solid #dfe6e9; border-radius: 50%;"></div>
+                        }
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.9rem; font-weight: 600; color: #2d3436; margin-bottom: 4px;">@lesson.Order. @lesson.Title</div>
+                        <div style="display: flex; gap: 10px; font-size: 0.75rem; color: #adb5bd;">
+                            <span>🎥 Video</span>
+                            @if (lesson.Quizzes?.Any() == true)
+                            {
+                                <span style="color: @primaryColor; font-weight: 700;">📝 @lesson.Quizzes.Count Quizzes</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    const lessons = @Html.Raw(lessonsJson);
+    const progressData = @Html.Raw(progressJson);
+
+    function loadLessonData(lessonId) {
+        try {
+            // 1. Ensure lessonId is a string
+            const idStr = lessonId.toString().toLowerCase();
+
+            const tracker = document.getElementById('currentLessonId');
+            if (tracker) tracker.value = idStr;
+
+            const lesson = lessons.find(l => l.lessonID.toString().toLowerCase() === idStr);
+            if (!lesson) return;
+
+            // 2. Safe UI Updates
+            const titleEl = document.getElementById('lessonDisplayTitle');
+            if (titleEl) titleEl.innerText = lesson.title;
+
+            const welcomeEl = document.getElementById('welcomeState');
+            if (welcomeEl) welcomeEl.style.display = 'none';
+
+            const mediaContainer = document.getElementById('mediaContainer');
+            if (mediaContainer) {
+                if (lesson.videoUrl) {
+                    mediaContainer.style.display = 'flex';
+                    mediaContainer.innerHTML = `<video controls style="width: 100%; height: 100%;" onended="markLessonComplete('${idStr}')">
+                        <source src="/media/${lesson.videoUrl}" type="video/mp4"></video>`;
+                }
+            }
+
+            // 3. SAFE SIDEBAR HIGHLIGHT (The crash fix)
+            const items = document.getElementsByClassName('sidebar-item');
+            for (let item of items) {
+                if (item) { // Guard against null items
+                    item.style.backgroundColor = "white";
+                    item.style.borderLeftColor = "transparent";
+                }
+            }
+
+            const activeItem = document.getElementById("lesson-" + idStr);
+            if (activeItem) { // Only apply style if the element actually exists
+                activeItem.style.backgroundColor = "#f3f0ff";
+                activeItem.style.borderLeftColor = "@primaryColor";
+            } else {
+                console.warn("Sidebar element not found for ID: lesson-" + idStr);
+            }
+
+            // 4. Quiz Render
+            const quizContainer = document.getElementById('quizContainer');
+            if (quizContainer) {
+                if (lesson.quizzes && lesson.quizzes.length > 0) {
+                    quizContainer.style.display = 'block';
+                    renderQuizzes(lesson.quizzes);
+                } else {
+                    quizContainer.style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error("Error in loadLessonData:", error);
+        }
+    }
+
+    function renderQuizzes(quizzes) {
+        let html = '';
+        quizzes.forEach((q) => {
+            const inputType = (q.answer.type === 1 || q.answer.type === 3) ? "radio" : "checkbox";
+            let rawOptions = q.answer.options || [];
+            let displayOptions = (q.answer.type === 3) ? ["True", "False"] :
+                (rawOptions.length === 1 && rawOptions[0].includes(',')) ? rawOptions[0].split(',').map(i => i.trim()) : rawOptions;
+
+            html += `
+                <div class="quiz-block" data-quiz-id="${q.quizID}" style="background: #fdfdfd; border: 1px solid #edf2f7; padding: 20px; border-radius: 10px; margin-bottom: 20px; transition: 0.3s;">
+                    <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <span style="background: #ebf4ff; color: #4c51bf; padding: 3px 10px; border-radius: 5px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                            ${getQuizTypeName(q.answer.type)}
+                        </span>
+                        <span id="status-${q.quizID}" style="font-weight: 800; font-size: 0.75rem; text-transform: uppercase;"></span>
+                        <strong style="font-size: 1.05rem; color: #2d3436; margin-left: 5px;">${q.question}</strong>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        ${displayOptions.map(opt => `
+                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px 15px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer;">
+                                <input type="${inputType}" name="quiz_group_${q.quizID}" value="${opt}" style="width: 18px; height: 18px; accent-color: #4834d4;">
+                                <span style="font-size: 0.95rem; color: #4a5568;">${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+
+                    <div id="explanation-${q.quizID}" style="display: none; margin-top: 15px; padding: 15px; background: #f0f7ff; border-left: 4px solid #4834d4; border-radius: 6px;">
+                        <div style="font-weight: 800; font-size: 0.75rem; color: #4834d4; text-transform: uppercase; margin-bottom: 5px;">👨‍🏫 Teacher's Explanation</div>
+                        <p class="explanation-text" style="margin: 0; font-size: 0.9rem; color: #2d3436; line-height: 1.5;"></p>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('quizBody').innerHTML = html;
+    }
+
+    function getQuizTypeName(type) {
+        if(type === 1) return "Single Choice";
+        if(type === 2) return "Multiple Choice";
+        if(type === 3) return "True / False";
+        return "Quiz";
+    }
+
+    async function submitQuizAttempt() {
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const lessonId = document.getElementById('currentLessonId').value;
+        const quizBlocks = document.querySelectorAll('.quiz-block');
+
+        if (!lessonId) return alert("Select a lesson first.");
+
+        const submissionPromises = Array.from(quizBlocks).map(async (block) => {
+            const quizId = block.getAttribute('data-quiz-id');
+            const statusEl = document.getElementById(`status-${quizId}`);
+            const explanationEl = document.getElementById(`explanation-${quizId}`);
+            const selectedOptions = Array.from(block.querySelectorAll('input:checked')).map(i => i.value);
+
+            // REMOVED: "if (selectedOptions.length === 0) return { skipped: true };"
+            // This allows the request to go through even if empty.
+
+            try {
+                const response = await fetch('?handler=UpdateQuizProgress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': tokenInput?.value
+                    },
+                    body: JSON.stringify({
+                        enrollmentID: '@Model.Enrollment.CourseProgress.EnrollmentID',
+                        lessonID: lessonId,
+                        quizID: quizId,
+                        selectedAnswers: selectedOptions
+                    })
+                });
+
+                const result = await response.json();
+
+                // 1. Show Explanation
+                if (explanationEl) {
+                    explanationEl.style.display = 'block';
+                    explanationEl.querySelector('.explanation-text').innerText = result.explanation || "No explanation provided.";
+                }
+
+                // 2. Update individual block UI
+                if (result.isCorrect) {
+                    block.style.border = "2px solid #16a34a";
+                    block.style.background = "#f0fdf4";
+                    statusEl.innerText = "✓ Correct";
+                    statusEl.style.color = "#16a34a";
+                } else {
+                    block.style.border = "2px solid #dc2626";
+                    block.style.background = "#fef2f2";
+                    // Show "Incorrect" or "No Answer" status
+                    statusEl.innerText = selectedOptions.length === 0 ? "⚠ No Answer" : "✗ Incorrect";
+                    statusEl.style.color = "#dc2626";
+                }
+                return result;
+            } catch (err) {
+                console.error(err);
+                return { error: true };
+            }
+        });
+
+        const results = await Promise.all(submissionPromises);
+
+        // Only reload if everything is actually correct
+        const allCorrect = results.every(r => r.isCorrect === true);
+        if (allCorrect) {
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        }
+    }
+
+    function markLessonComplete(lessonId) {
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        fetch('?handler=UpdateLessonProgress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': tokenInput?.value },
+            body: JSON.stringify({ enrollmentID: '@Model.Enrollment.CourseProgress.EnrollmentID', lessonID: lessonId, playedSeconds: 0, duration: 0, isCompleted: true })
+        }).then(r => { if(r.ok) location.reload(); });
+    }
+</script>
+
+<style>
+    .hide-scroll {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+</style>

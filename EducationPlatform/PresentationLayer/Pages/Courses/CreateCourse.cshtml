@@ -1,0 +1,558 @@
+﻿@page
+@model PresentationLayer.Pages.Courses.CreateCourseModel
+@{
+    ViewData["Title"] = "Create Course";
+}
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-bottom: 100px;">
+    <h2 style="color: #2d3436; font-weight: 700; margin-bottom: 25px;">Create New Course</h2>
+
+    <form method="post" enctype="multipart/form-data" id="courseForm">
+        @Html.AntiForgeryToken()
+        <div style="display: flex; gap: 30px; align-items: flex-start;">
+            <div style="flex: 0 0 200px; position: sticky; top: 20px; max-height: 80vh; overflow-y: auto; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <h4 style="margin: 0 0 15px 0; font-size: 1rem; color: #4834d4; display: flex; justify-content: space-between;">
+                    Course Map
+                </h4>
+                <div id="sidebar-nav" style="display: flex; flex-direction: column; gap: 8px;">
+                </div>
+            </div>
+
+            <div style="flex: 1;">
+                <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px;">
+                    <div style="margin-bottom: 25px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 10px;">Course Thumbnail</label>
+                        <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; background: white; border-radius: 8px;">
+                            <div style="flex: 1; width: 100%;">
+                                <input type="file" id="thumbnail-input" asp-for="VM.Image" onchange="previewThumbnail()"
+                                       style="display: block; width: 96%; padding: 2%; border: 1px dashed #cbd5e0; border-radius: 8px; cursor: pointer;" />
+                            </div>
+                            <div id="preview-container" style="display: none; flex-shrink: 0;">
+                                <img id="thumbnail-preview" src="#"
+                                     style="width: 100%; height: auto; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e0; display: block;" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px;">Course Title</label>
+                        <input asp-for="VM.Title" placeholder="Enter course name" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box;" />
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px;">Description</label>
+                        <textarea asp-for="VM.Description" rows="4" placeholder="What will students learn?" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                        <div>
+                            <label style="font-weight: 600; display: block; margin-bottom: 8px;">Price (VND)</label>
+                            <input asp-for="VM.Price" type="number" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box;" />
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; display: block; margin-bottom: 8px;">Grade</label>
+                            <select id="grade-select" asp-for="VM.GradeID" asp-items="@(new SelectList(Model.VM.Grades, "GradeID", "Name"))" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;"></select>
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; display: block; margin-bottom: 8px;">Subject</label>
+                            <select id="subject-select" asp-for="VM.SubjectID" asp-items="@(new SelectList(Model.VM.Subjects, "SubjectID", "Name"))" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="lessons-container"></div>
+
+                <button type="button" onclick="addLesson()"
+                        style="text-decoration: none; border: 1px solid #4834d4; color: #4834d4; width: 100%; padding: 2%; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; cursor: pointer"
+                        onmouseover="this.style.backgroundColor='#4834d4'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4834d4';">
+                    Add Lesson
+                </button>
+            </div>
+        </div>
+
+        <div style="position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px 50px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); display: flex; justify-content: flex-end; z-index: 2000;">
+            <button type="submit"
+                    style="display: inline-block; text-decoration: none; border: 1px solid #4834d4; color: #4834d4; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; white-space: nowrap; cursor: pointer"
+                    onmouseover="this.style.backgroundColor='#4834d4'; this.style.color='white';"
+                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4834d4';">
+                Create Course
+            </button>
+        </div>
+    </form>
+</div>
+
+<div id="templates" style="display:none;">
+    <div class="lesson-block" style="background: white; padding: 25px; border-radius: 15px; border: 1px solid #e2e8f0; margin-bottom: 30px; position: relative;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <h4 class="lesson-label" style="margin:0; color: #4834d4;">Lesson 1</h4>
+            <button type="button" onclick="removeLesson(this)"
+                    style="text-decoration: none; border: 1px solid red; color: red; width: 15%; padding: 1%; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; cursor: pointer"
+                    onmouseover="this.style.backgroundColor='red'; this.style.color='white';"
+                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='red';">
+                Remove Lesson
+            </button>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+                <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 10px">Lesson Title</label>
+                <input class="lesson-title" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box;" />
+            </div>
+            <div style="flex: 0.3;">
+                <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 10px">Order</label>
+                <input type="number" class="lesson-order" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box;" />
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 10px">Lesson Description</label>
+            <textarea class="lesson-description" rows="2" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; resize: vertical;"></textarea>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 10px">Learning Objectives</label>
+            <input class="lesson-objectives" placeholder="e.g. Understand basic syntax; Build a hello world" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box;" />
+        </div>
+
+        <div style="margin-bottom: 20px; background: #f7fafc; padding: 15px; border-radius: 10px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 10px;">Lesson Video</label>
+            <input type="file" class="lesson-video-input" onchange="uploadLessonVideo(this)" accept="video/*" />
+
+            <div class="video-skeleton" style="display: none; margin-top: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span style="font-size: 0.8rem; font-weight: 600; color: #4834d4;">Uploading Video...</span>
+                    <span class="progress-percent" style="font-size: 0.8rem; font-weight: 600; color: #4834d4;">0%</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: #edf2f7; border-radius: 10px; overflow: hidden;">
+                    <div class="progress-bar" style="width: 0%; height: 100%; background: #4834d4; transition: width 0.3s ease;"></div>
+                </div>
+            </div>
+
+            <input type="hidden" class="lesson-video-url" />
+            <video class="lesson-video-preview" controls style="display: none; width: 100%; max-height: 400px; background: black; border-radius: 8px; margin-top: 15px;"></video>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <h5 style="font-size: 1rem; color: #718096;">Quizzes</h5>
+            <div class="quizzes-container"></div>
+            <button type="button" onclick="addQuiz(this)"
+                    style="text-decoration: none; border: 1px solid #4834d4; color: #4834d4; width: 10%; padding: 1%; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; cursor: pointer"
+                    onmouseover="this.style.backgroundColor='#4834d4'; this.style.color='white';"
+                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4834d4';">
+                Add Quiz
+            </button>
+        </div>
+    </div>
+
+    <div class="quiz-block" style="padding: 25px; border-radius: 12px; margin-bottom: 25px; background: #ffffff; border: 1px solid #edf2f7;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="background: #ebf4ff; color: #4c51bf; padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;">TYPE:</span>
+                <select class="quiz-type" onchange="renderQuizAnswers(this)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.85rem; color: #4c51bf; font-weight: 600;">
+                    <option value="1">Single Choice</option>
+                    <option value="2">Multiple Choice</option>
+                    <option value="3">True/False</option>
+                </select>
+            </div>
+            <button type="button" onclick="removeQuiz(this)"
+                    style="text-decoration: none; border: 1px solid red; color: red; width: 15%; padding: 1%; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; cursor: pointer"
+                    onmouseover="this.style.backgroundColor='red'; this.style.color='white';"
+                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='red';">
+                Delete Quiz
+            </button>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #4a5568; margin-bottom: 8px;">QUESTION</label>
+            <input class="quiz-question" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box;" />
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #4a5568; margin-bottom: 8px;">OPTIONS & ANSWERS</label>
+            <div class="answer-logic-area" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                <div class="options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                <button type="button" class="add-opt-btn" onclick="addOption(this)"
+                        style="margin-top: 10px; text-decoration: none; border: 1px solid #4834d4; color: #4834d4; width: 100%; padding: 1%; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; cursor: pointer"
+                        onmouseover="this.style.backgroundColor='#4834d4'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4834d4';">
+                    Add Option
+                </button>
+            </div>
+        </div>
+        <div style="margin-top: 15px;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #4a5568; margin-bottom: 8px;">EXPLANATION NOTE</label>
+            <input class="quiz-note" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fffcf0; box-sizing: border-box;" />
+        </div>
+        <input type="hidden" class="quiz-options-hidden" />
+        <input type="hidden" class="quiz-correct-hidden" />
+        <input type="hidden" class="quiz-tf-hidden" value="false" />
+    </div>
+</div>
+
+<style>
+    .nav-item {
+        user-select: none; /* Prevent text selection while dragging */
+        transition: background-color 0.2s;
+    }
+
+        .nav-item:hover {
+            background-color: #f1f5f9 !important;
+        }
+    /* This class is added by SortableJS while dragging */
+    .sortable-ghost {
+        opacity: 0.4;
+        background-color: #4834d4 !important;
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        const MEDIA_BASE_PATH = '@Url.Content("~/media/")';
+                // 1. Listen for changes on Grade and Subject dropdowns
+        const gradeSelect = document.getElementById('grade-select');
+        const subjectSelect = document.getElementById('subject-select');
+
+        [gradeSelect, subjectSelect].forEach(select => {
+            select.addEventListener('change', fetchDefaultLessons);
+        });
+        const navContainer = document.getElementById('sidebar-nav');
+
+        Sortable.create(navContainer, {
+            animation: 150,
+            handle: '.drag-handle',
+            onEnd: function () {
+                const container = document.getElementById('lessons-container');
+                const navItems = navContainer.querySelectorAll('.nav-item');
+
+                // Physically reorder the lesson blocks on the right
+                navItems.forEach(item => {
+                    const lessonId = item.getAttribute('data-for');
+                    const block = document.getElementById(lessonId);
+                    if (block) {
+                        container.appendChild(block);
+                    }
+                });
+
+                // This is the crucial part: refresh all numbers and indices
+                reindex();
+            }
+        });
+
+        function updateSidebar() {
+            const nav = document.getElementById('sidebar-nav');
+            nav.innerHTML = '';
+
+            document.querySelectorAll("#lessons-container > .lesson-block").forEach((block, index) => {
+                const id = `lesson-block-${index}`;
+                block.id = id;
+                const title = block.querySelector(".lesson-title").value || `Lesson ${index + 1}`;
+
+                const navItem = document.createElement('div');
+                navItem.className = 'nav-item';
+                navItem.setAttribute('data-for', id);
+                navItem.style.cssText = "background: white; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;";
+
+                navItem.innerHTML = `
+                    <span class="drag-handle" style="cursor: grab; color: #cbd5e0;">⠿</span>
+                    <span onclick="document.getElementById('${id}').scrollIntoView({behavior: 'smooth'})" style="flex:1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        <strong>L${index + 1}:</strong> ${title}
+                    </span>
+                `;
+                nav.appendChild(navItem);
+            });
+        }
+
+        // Add listeners to lesson titles to update sidebar in real-time
+        document.addEventListener('input', (e) => {
+            if (e.target.classList.contains('lesson-title')) {
+                updateSidebar();
+            }
+        });
+
+        async function fetchDefaultLessons() {
+            const gradeId = gradeSelect.value;
+            const subjectId = subjectSelect.value;
+
+            // Only fetch if both are selected
+            if (!gradeId || !subjectId) return;
+
+            try {
+                const response = await fetch(`?handler=DefaultLessons&subjectId=${subjectId}&gradeId=${gradeId}`);
+                if (!response.ok) throw new Error("Failed to fetch lessons");
+
+                const lessons = await response.json();
+
+                // Clear current lessons and add the new ones
+                const container = document.getElementById('lessons-container');
+                container.innerHTML = '';
+
+                lessons.forEach(lesson => {
+                    // Reusing your existing addLesson logic but passing data
+                    const template = document.querySelector('#templates .lesson-block').cloneNode(true);
+
+                    // Populate the title and order from the DTO
+                    template.querySelector(".lesson-title").value = lesson.title || lesson.name;
+                    template.querySelector(".lesson-order").value = lesson.order;
+                    if(lesson.description) template.querySelector(".lesson-description").value = lesson.description;
+                    if(lesson.objectives) template.querySelector(".lesson-objectives").value = lesson.objectives;
+                    
+                    container.appendChild(template);
+                });
+
+                reindex(); // Important to fix the [index] names for the post request
+            } catch (error) {
+                console.error("Error fetching defaults:", error);
+            }
+        }
+
+        function previewThumbnail() {
+            const input = document.getElementById('thumbnail-input');
+            const preview = document.getElementById('thumbnail-preview');
+            const container = document.getElementById('preview-container');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { preview.src = e.target.result; container.style.display = 'block'; };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function addLesson() {
+            const container = document.getElementById('lessons-container');
+            const template = document.querySelector('#templates .lesson-block').cloneNode(true);
+            container.appendChild(template);
+            reindex();
+        }
+
+        function addQuiz(btn) {
+            const container = btn.closest('.lesson-block').querySelector('.quizzes-container');
+            const template = document.querySelector('#templates .quiz-block').cloneNode(true);
+            container.appendChild(template);
+            const quizId = "q_" + Math.random().toString(36).substr(2, 9);
+            template.setAttribute("data-quiz-id", quizId);
+            renderQuizAnswers(template.querySelector('.quiz-type'));
+            reindex();
+        }
+
+        function renderQuizAnswers(select) {
+            const quizBlock = select.closest('.quiz-block');
+            const area = quizBlock.querySelector('.options-container');
+            const addBtn = quizBlock.querySelector('.add-opt-btn');
+            const type = select.value;
+            const quizId = quizBlock.getAttribute("data-quiz-id");
+            area.innerHTML = '';
+
+            if (type === "3") { // True/False
+                addBtn.style.display = 'none';
+                area.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 10px 15px; border: 1px solid #cbd5e0; border-radius: 8px; cursor: pointer;">
+                            <input type="radio" name="${quizId}" value="True" onchange="collectQuizData(this)" style="width: 18px; height: 18px;">
+                            <span>True</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 10px 15px; border: 1px solid #cbd5e0; border-radius: 8px; cursor: pointer;">
+                            <input type="radio" name="${quizId}" value="False" onchange="collectQuizData(this)" style="width: 18px; height: 18px;">
+                            <span>False</span>
+                        </label>
+                    </div>`;
+            } else {
+                addBtn.style.display = 'block';
+                addOption(addBtn);
+            }
+            collectQuizData(select);
+        }
+
+        function addOption(btn) {
+            const quizBlock = btn.closest('.quiz-block');
+            const container = quizBlock.querySelector('.options-container');
+            const type = quizBlock.querySelector('.quiz-type').value;
+            const quizId = quizBlock.getAttribute("data-quiz-id");
+            const inputType = type === "1" ? "radio" : "checkbox";
+            const groupName = type === "1" ? quizId : "opt_" + Math.random();
+            const div = document.createElement('div');
+            div.style.cssText = "display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: white;";
+            div.innerHTML = `
+                <input type="${inputType}" name="${groupName}" class="opt-check" onchange="collectQuizData(this)" style="width: 18px; height: 18px;">
+                <input type="text" class="opt-text" placeholder="Option text" oninput="collectQuizData(this)" style="flex:1; border: none; outline: none;">
+                <button type="button" onclick="this.parentElement.remove(); collectQuizData(this)" style="color:#f87171; border:none; background:none; cursor:pointer;">&times;</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function collectQuizData(el) {
+            const quizBlock = el.closest('.quiz-block');
+            if (!quizBlock) return;
+            const type = quizBlock.querySelector('.quiz-type').value;
+            const optionsContainer = quizBlock.querySelector('.options-container');
+            let options = []; let corrects = []; let tfValue = "false";
+
+            if (type === "3") {
+                options = ["True", "False"];
+                const selected = optionsContainer.querySelector('input[type="radio"]:checked');
+                if (selected) {
+                    tfValue = (selected.value === "True") ? "true" : "false";
+                    corrects.push(selected.value);
+                }
+            } else {
+                optionsContainer.querySelectorAll(':scope > div').forEach(row => {
+                    const text = row.querySelector('.opt-text').value.trim();
+                    const isChecked = row.querySelector('.opt-check').checked;
+                    if (text) {
+                        options.push(text);
+                        if (isChecked) corrects.push(text);
+                    }
+                });
+            }
+            quizBlock.querySelector('.quiz-options-hidden').value = options.join(',');
+            quizBlock.querySelector('.quiz-correct-hidden').value = corrects.join(',');
+            quizBlock.querySelector('.quiz-tf-hidden').value = tfValue;
+        }
+
+        function removeLesson(btn) { 
+            btn.closest('.lesson-block').remove(); 
+            reindex();             
+        }
+
+        function removeQuiz(btn) { 
+            btn.closest('.quiz-block').remove(); 
+            reindex();
+        }
+
+        function reindex() {
+            document.querySelectorAll("#lessons-container > .lesson-block").forEach((lesson, li) => {
+                lesson.querySelector(".lesson-label").textContent = `Lesson ${li + 1}`;
+                lesson.querySelector(".lesson-title").name = `VM.Lessons[${li}].Title`;
+                lesson.querySelector(".lesson-order").name = `VM.Lessons[${li}].Order`;
+                lesson.querySelector(".lesson-description").name = `VM.Lessons[${li}].Description`;
+                lesson.querySelector(".lesson-objectives").name = `VM.Lessons[${li}].Objectives`;
+                const orderInput = lesson.querySelector(".lesson-order");
+                orderInput.name = `VM.Lessons[${li}].Order`;
+                orderInput.value = li + 1;
+                lesson.querySelector(".lesson-video-url").name = `VM.Lessons[${li}].VideoUrl`;
+                lesson.querySelectorAll(".quiz-block").forEach((quiz, qi) => {
+                    const prefix = `VM.Lessons[${li}].Quizzes[${qi}]`;
+                    const ansPrefix = `${prefix}.Answer`;
+                    quiz.querySelector(".quiz-question").name = `${prefix}.Question`;
+                    quiz.querySelector(".quiz-note").name = `${prefix}.Note`;
+                    quiz.querySelector(".quiz-type").name = `${ansPrefix}.Type`;
+                    quiz.querySelector(".quiz-options-hidden").name = `${ansPrefix}.Options`;
+                    quiz.querySelector(".quiz-correct-hidden").name = `${ansPrefix}.CorrectAnswers`;
+                    quiz.querySelector(".quiz-tf-hidden").name = `${ansPrefix}.TrueOrFalse`;
+                });
+            });
+
+            updateSidebar();
+        }
+
+        async function uploadLessonVideo(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const lessonBlock = input.closest(".lesson-block");
+            const skeleton = lessonBlock.querySelector(".video-skeleton");
+            const progressBar = lessonBlock.querySelector(".progress-bar");
+            const percentText = lessonBlock.querySelector(".progress-percent");
+            const videoPreview = lessonBlock.querySelector(".lesson-video-preview");
+            const hiddenUrlInput = lessonBlock.querySelector(".lesson-video-url");
+
+            // Init UI
+            skeleton.style.display = 'block';
+            videoPreview.style.display = 'none';
+            progressBar.style.width = '0%';
+            percentText.textContent = '0%';
+            input.disabled = true;
+
+            const uploadId = crypto.randomUUID();
+            const chunkSize = 5 * 1024 * 1024; // 5MB
+            const totalChunks = Math.ceil(file.size / chunkSize);
+            let index = 0;
+
+            try {
+                while (index < totalChunks) {
+                    const chunk = file.slice(index * chunkSize, (index + 1) * chunkSize);
+                    const form = new FormData();
+                    form.append("chunk", chunk);
+                    form.append("uploadId", uploadId);
+                    form.append("index", index);
+
+                    await fetch("?handler=UploadChunk", {
+                        method: "POST",
+                        headers: {
+                            "RequestVerificationToken": getCsrfToken()
+                        },
+                        body: form
+                    });
+
+                    index++;
+                    // Update UI Progress (Limit to 95% until complete)
+                    const percent = Math.floor((index / totalChunks) * 95);
+                    progressBar.style.width = percent + '%';
+                    percentText.textContent = percent + '%';
+                }
+
+                const ext = file.name.split('.').pop();
+                const completeForm = new FormData();
+                completeForm.append("uploadId", uploadId);
+                completeForm.append("extension", ext);
+
+                const res = await fetch("?handler=Complete", {
+                    method: "POST",
+                    headers: {
+                        "RequestVerificationToken": getCsrfToken()
+                    },
+                    body: completeForm
+                });
+                if (!res.ok) throw new Error();
+
+                const data = await res.json();
+
+                // Finalize UI
+                progressBar.style.width = '100%';
+                percentText.textContent = '100%';
+
+                setTimeout(() => {
+                    skeleton.style.display = 'none';
+                    hiddenUrlInput.value = data.url;
+                    videoPreview.src = MEDIA_BASE_PATH + data.url;
+                    videoPreview.style.display = 'block';
+                }, 500);
+
+            } catch (err) {
+                alert("Upload failed");
+                skeleton.style.display = 'none';
+            } finally {
+                input.disabled = false;
+            }
+        }
+
+        function getCsrfToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]').value;
+        }
+
+        document.getElementById("courseForm").addEventListener("submit", function () {
+            reindex();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const navContainer = document.getElementById('sidebar-nav');
+            if (navContainer) {
+                Sortable.create(navContainer, {
+                    animation: 150,
+                    handle: '.drag-handle', // Only drag by the ⠿ icon
+                    onEnd: function () {
+                        const container = document.getElementById('lessons-container');
+                        const navItems = navContainer.querySelectorAll('.nav-item');
+
+                        navItems.forEach(item => {
+                            const lessonId = item.getAttribute('data-for');
+                            const block = document.getElementById(lessonId);
+                            if (block) container.appendChild(block);
+                        });
+
+                        reindex(); // This will also refresh the sidebar labels
+                    }
+                });
+            }
+            updateSidebar();
+        });
+    </script>
+}

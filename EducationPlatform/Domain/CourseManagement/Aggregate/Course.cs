@@ -94,6 +94,8 @@ namespace Domain.CourseManagement.Aggregate
         #region Methods
         public Lesson AddLesson(
             string title,
+            string objectives,
+            string description,
             string videoUrl,
             int order)
         {
@@ -104,6 +106,8 @@ namespace Domain.CourseManagement.Aggregate
             var lesson = new Lesson(
                 Guid.NewGuid(),
                 title,
+                objectives,
+                description,
                 videoUrl,
                 order,
                 CourseID);

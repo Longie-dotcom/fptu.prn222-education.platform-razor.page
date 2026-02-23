@@ -69,6 +69,35 @@ namespace DataAccessLayer.Implementation
                 .FirstOrDefaultAsync(e => e.EnrollmentID == enrollmentId);
         }
 
+        public async Task<IEnumerable<Enrollment>> GetStudentStatistic(
+            Guid studentId)
+        {
+            return await context.Enrollments
+                .AsNoTracking()
+                .AsSplitQuery()
+                // Course
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.Teacher)
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.Grade)
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.Subject)
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.Lessons)
+                        .ThenInclude(l => l.Quizzes)
+                // Progress → LessonProgress → Lesson
+                .Include(e => e.CourseProgress)
+                    .ThenInclude(cp => cp.LessonProgresses)
+                        .ThenInclude(lp => lp.Lesson)
+                .Include(e => e.CourseProgress)
+                    .ThenInclude(cp => cp.LessonProgresses)
+                        .ThenInclude(lp => lp.QuizProgresses)
+                            .ThenInclude(qp => qp.Quiz)
+                .Where(e => e.StudentID == studentId)
+                .OrderByDescending(e => e.EnrolledAt)
+                .ToListAsync();
+        }
+
         public async Task<Enrollment?> GetEnrollmentForUpdate(Guid enrollmentId)
         {
             return await context.Enrollments

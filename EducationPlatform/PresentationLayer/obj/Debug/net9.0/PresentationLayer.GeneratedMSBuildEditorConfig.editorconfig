@@ -1,49 +1,107 @@
 is_global = true
 build_property.TargetFramework = net9.0
+build_property.TargetFramework = net9.0
+build_property.TargetPlatformMinVersion = 
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
 build_property.ProjectTypeGuids = 
 build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v9.0
 build_property.RootNamespace = PresentationLayer
 build_property.RootNamespace = PresentationLayer
-build_property.ProjectDir = D:\GitHub\fptu.prn222-education.platform-razor.page\EducationPlatform\PresentationLayer\
+build_property.ProjectDir = C:\Users\ASROCK\Documents\GitHub\fptu.prn222-education.platform-razor.page\EducationPlatform\PresentationLayer\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = D:\GitHub\fptu.prn222-education.platform-razor.page\EducationPlatform\PresentationLayer
+build_property.MSBuildProjectDirectory = C:\Users\ASROCK\Documents\GitHub\fptu.prn222-education.platform-razor.page\EducationPlatform\PresentationLayer
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
 
-[D:/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Error.cshtml]
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/AISupports/AISupport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQUlTdXBwb3J0c1xBSVN1cHBvcnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Auth/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXV0aFxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Auth/Register.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXV0aFxSZWdpc3Rlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Auth/VerifyEmail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXV0aFxWZXJpZnlFbWFpbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Courses/CreateCourse.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291cnNlc1xDcmVhdGVDb3Vyc2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Courses/DetailCourse.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291cnNlc1xEZXRhaWxDb3Vyc2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Courses/ListCourse.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291cnNlc1xMaXN0Q291cnNlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Courses/ReviewCourse.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291cnNlc1xSZXZpZXdDb3Vyc2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Enrollments/ListEnrollment.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRW5yb2xsbWVudHNcTGlzdEVucm9sbG1lbnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Enrollments/ResumeLearning.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRW5yb2xsbWVudHNcUmVzdW1lTGVhcm5pbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Index.cshtml]
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Privacy.cshtml]
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Orders/ListOrder.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3JkZXJzXExpc3RPcmRlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Orders/ReturnOrder.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3JkZXJzXFJldHVybk9yZGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpdmFjeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/_ViewImports.cshtml]
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/_ViewStart.cshtml]
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Shared/_Layout.cshtml]
+[C:/Users/ASROCK/Documents/GitHub/fptu.prn222-education.platform-razor.page/EducationPlatform/PresentationLayer/Pages/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-04qrr1wqaj

@@ -1,10 +1,12 @@
-﻿using Domain.DomainExceptions;
+﻿using Domain.AcademicManagement.Entity;
+using Domain.DomainExceptions;
 
 namespace Domain.AcademicManagement.Aggregate
 {
     public class Subject
     {
         #region Attributes
+        private readonly List<DefaultLesson> defaultLessons = new();
         #endregion
 
         #region Properties
@@ -12,6 +14,11 @@ namespace Domain.AcademicManagement.Aggregate
         public string Code { get; private set; }
         public string Name { get; private set; }
         public bool IsActive { get; private set; }
+
+        public IReadOnlyCollection<DefaultLesson> DefaultLessons
+        {
+            get { return defaultLessons.AsReadOnly(); }
+        }
         #endregion
 
         protected Subject() { }

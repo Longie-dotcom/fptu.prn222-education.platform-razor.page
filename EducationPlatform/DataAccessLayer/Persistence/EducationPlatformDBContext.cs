@@ -1,4 +1,5 @@
 ﻿using Domain.AcademicManagement.Aggregate;
+using Domain.AcademicManagement.Entity;
 using Domain.AIManagement.Aggregate;
 using Domain.AIManagement.Entity;
 using Domain.AuditManagement.Aggregate;
@@ -23,6 +24,7 @@ namespace DataAccessLayer.Persistence
         // ====================
         public DbSet<Grade> Grades => Set<Grade>();
         public DbSet<Subject> Subjects => Set<Subject>();
+        public DbSet<DefaultLesson> DefaultLessons => Set<DefaultLesson>();
 
         // ====================
         // Identity Management
@@ -106,6 +108,53 @@ namespace DataAccessLayer.Persistence
 
                 entity.HasIndex(s => s.Code)
                       .IsUnique();
+
+                // ----- Default Lessons (Internal Entities)
+                entity.HasMany(s => s.DefaultLessons)
+                      .WithOne()
+                      .HasForeignKey(nameof(DefaultLesson.SubjectID))
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ====================
+            // DefaultLesson (Internal Entity)
+            // ====================
+            modelBuilder.Entity<DefaultLesson>(entity =>
+            {
+                entity.HasKey(d => d.DefaultLessonID);
+
+                entity.Property(d => d.Name)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(d => d.Description)
+                      .IsRequired()
+                      .HasMaxLength(4000);
+
+                entity.Property(d => d.Objectives)
+                      .IsRequired()
+                      .HasMaxLength(2000);
+
+                entity.Property(d => d.IsActive)
+                      .HasDefaultValue(true);
+
+                entity.Property(d => d.SubjectID)
+                      .IsRequired();
+
+                entity.Property(d => d.GradeID)
+                      .IsRequired();
+
+                entity.HasIndex(d => new { d.SubjectID, d.GradeID });
+
+                entity.HasOne<Subject>()
+                      .WithMany()
+                      .HasForeignKey(d => d.SubjectID)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Grade>()
+                      .WithMany()
+                      .HasForeignKey(d => d.GradeID)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // ====================
@@ -264,6 +313,14 @@ namespace DataAccessLayer.Persistence
                 entity.HasKey(l => l.LessonID);
 
                 entity.Property(l => l.Title)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(l => l.Objectives)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(l => l.Description)
                       .IsRequired()
                       .HasMaxLength(200);
 
@@ -554,7 +611,7 @@ namespace DataAccessLayer.Persistence
                 entity.HasOne(a => a.AISubmission)
                       .WithOne()
                       .HasForeignKey<AISubmission>(s => s.AIAssignmentID)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
 

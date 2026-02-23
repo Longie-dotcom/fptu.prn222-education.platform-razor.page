@@ -59,6 +59,8 @@ namespace BusinessLayer.DTO
     {
         public Guid LessonID { get; set; }
         public string Title { get; set; } = string.Empty;
+        public string Objectives { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public string VideoUrl { get; set; } = string.Empty;
         public int Order { get; set; }
         public bool IsViolated { get; set; }
@@ -114,6 +116,8 @@ namespace BusinessLayer.DTO
     public class CreateLessonDTO
     {
         public string Title { get; set; } = string.Empty;
+        public string Objectives { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public string VideoUrl { get; set; } = string.Empty;
         public int Order { get; set; }
         public List<CreateQuizDTO> Quizzes { get; set; } = new List<CreateQuizDTO>();

@@ -1,4 +1,5 @@
 ﻿using Domain.AcademicManagement.Aggregate;
+using Domain.AcademicManagement.Entity;
 using Domain.CourseManagement.Aggregate;
 using Domain.CourseManagement.Entity;
 using Domain.IdentityManagement.Aggregate;
@@ -12,42 +13,295 @@ namespace DataAccessLayer.Persistence
         public static async Task SeedAsync(EducationPlatformDBContext context)
         {
             // ====================
-            // Seed Grades (Grade 1 → 12)
+            // Seed Grades
             // ====================
+            var gradeIds = new Dictionary<int, Guid>();
+
             if (!await context.Grades.AnyAsync())
             {
                 var grades = new List<Grade>();
+
                 for (int i = 1; i <= 12; i++)
                 {
-                    grades.Add(new Grade(Guid.NewGuid(), $"Grade {i}"));
+                    var id = Guid.NewGuid();
+                    gradeIds[i] = id;
+
+                    grades.Add(new Grade(id, $"Grade {i}"));
                 }
 
                 context.Grades.AddRange(grades);
+            }
+            else
+            {
+                var grades = await context.Grades.ToListAsync();
+                foreach (var g in grades)
+                {
+                    var number = int.Parse(g.Name.Split(" ")[1]);
+                    gradeIds[number] = g.GradeID;
+                }
             }
 
             // ====================
             // Seed Subjects
             // ====================
+            var subjectIds = new Dictionary<string, Guid>();
+
             if (!await context.Subjects.AnyAsync())
             {
-                var subjects = new List<Subject>
+                var subjects = new List<Subject>();
+
+                void AddSubject(string code, string name)
                 {
-                    new Subject(Guid.NewGuid(), "MATH", "Mathematics", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "VIET", "Vietnamese", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "ENG", "English", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "SCI", "Science", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "HIS", "History", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "GEO", "Geography", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "PHYS", "Physics", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "CHEM", "Chemistry", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "BIO", "Biology", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "TECH", "Technology", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "ART", "Art", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "PE", "Physical Education", Guid.Empty),
-                    new Subject(Guid.NewGuid(), "CIT", "Civic Education", Guid.Empty)
-                };
+                    var id = Guid.NewGuid();
+                    subjectIds[code] = id;
+
+                    subjects.Add(new Subject(id, code, name, Guid.Empty));
+                }
+
+                AddSubject("MATH", "Mathematics");
+                AddSubject("VIET", "Vietnamese");
+                AddSubject("ENG", "English");
+                AddSubject("SCI", "Science");
+                AddSubject("HIS", "History");
+                AddSubject("GEO", "Geography");
+                AddSubject("PHYS", "Physics");
+                AddSubject("CHEM", "Chemistry");
+                AddSubject("BIO", "Biology");
+                AddSubject("TECH", "Technology");
+                AddSubject("ART", "Art");
+                AddSubject("PE", "Physical Education");
+                AddSubject("CIT", "Civic Education");
 
                 context.Subjects.AddRange(subjects);
+            }
+            else
+            {
+                var subjects = await context.Subjects.ToListAsync();
+                foreach (var s in subjects)
+                {
+                    subjectIds[s.Code] = s.SubjectID;
+                }
+            }
+
+            // ====================
+            // Seed Default Lessons
+            // ====================
+            string[] GetTopics(string subjectCode, int grade)
+            {
+                return subjectCode switch
+                {
+                    "MATH" => grade switch
+                    {
+                        <= 2 => new[]
+                        {
+                            "Counting Numbers",
+                            "Addition and Subtraction",
+                            "Basic Shapes",
+                            "Measuring Length",
+                            "Word Problems"
+                        },
+
+                        <= 5 => new[]
+                        {
+                            "Multiplication and Division",
+                            "Fractions",
+                            "Decimals",
+                            "Perimeter and Area",
+                            "Math Problem Solving"
+                        },
+
+                        <= 9 => new[]
+                        {
+                            "Algebra Basics",
+                            "Linear Equations",
+                            "Geometry Fundamentals",
+                            "Statistics",
+                            "Graph Interpretation"
+                        },
+
+                        _ => new[]
+                        {
+                            "Functions",
+                            "Trigonometry",
+                            "Calculus Introduction",
+                            "Probability",
+                            "Advanced Problem Solving"
+                        }
+                    },
+
+                    "VIET" => grade switch
+                    {
+                        <= 2 => new[]
+                        {
+                            "Alphabet and Pronunciation",
+                            "Simple Sentences",
+                            "Listening and Repeating",
+                            "Reading Short Stories",
+                            "Basic Writing"
+                        },
+
+                        <= 5 => new[]
+                        {
+                            "Reading Comprehension",
+                            "Descriptive Writing",
+                            "Grammar Basics",
+                            "Storytelling",
+                            "Vocabulary Building"
+                        },
+
+                        <= 9 => new[]
+                        {
+                            "Narrative Text",
+                            "Poetry",
+                            "Literary Analysis",
+                            "Argumentative Writing",
+                            "Vietnamese Grammar"
+                        },
+
+                        _ => new[]
+                        {
+                            "Classic Vietnamese Literature",
+                            "Modern Literature",
+                            "Essay Writing",
+                            "Text Analysis",
+                            "Critical Thinking in Literature"
+                        }
+                    },
+
+                    "ENG" => new[]
+                    {
+                        "Vocabulary",
+                        "Grammar",
+                        "Reading",
+                        "Listening",
+                        "Writing"
+                    },
+
+                    "PHYS" => new[]
+                    {
+                        "Motion",
+                        "Force",
+                        "Energy",
+                        "Electricity",
+                        "Practical Applications"
+                    },
+
+                    "CHEM" => new[]
+                    {
+                        "Atoms and Molecules",
+                        "Chemical Reactions",
+                        "Periodic Table",
+                        "Chemical Calculations",
+                        "Chemistry in Life"
+                    },
+
+                    "BIO" => new[]
+                    {
+                        "Cells",
+                        "Human Body",
+                        "Plants",
+                        "Ecosystems",
+                        "Genetics Basics"
+                    },
+
+                    "HIS" => new[]
+                    {
+                        "Ancient Vietnam",
+                        "Feudal Dynasties",
+                        "Colonial Period",
+                        "Modern Vietnam",
+                        "World History Connections"
+                    },
+
+                    "GEO" => new[]
+                    {
+                        "Maps and Geography Skills",
+                        "Vietnam Geography",
+                        "Climate",
+                        "Population",
+                        "Natural Resources"
+                    },
+
+                    "SCI" => new[]
+                    {
+                        "Scientific Observation",
+                        "Matter",
+                        "Energy",
+                        "Earth Science",
+                        "Environment"
+                    },
+
+                    "TECH" => new[]
+                    {
+                        "Basic Tools",
+                        "Engineering Thinking",
+                        "Simple Machines",
+                        "Technology in Life",
+                        "Design Project"
+                    },
+
+                    "ART" => new[]
+                    {
+                        "Drawing Basics",
+                        "Color Theory",
+                        "Craft",
+                        "Art Appreciation",
+                        "Creative Project"
+                    },
+
+                    "PE" => new[]
+                    {
+                        "Warm-up Exercises",
+                        "Team Sports",
+                        "Fitness Training",
+                        "Coordination",
+                        "Health Education"
+                    },
+
+                    "CIT" => new[]
+                    {
+                        "Community Rules",
+                        "Responsibility",
+                        "Ethics",
+                        "Citizenship",
+                        "Life Skills"
+                    },
+
+                    _ => new[] { "Lesson 1", "Lesson 2", "Lesson 3", "Lesson 4", "Lesson 5" }
+                };
+            }
+
+            if (!await context.Set<DefaultLesson>().AnyAsync())
+            {
+                var lessons = new List<DefaultLesson>();
+
+                foreach (var gradePair in gradeIds)
+                {
+                    int gradeNumber = gradePair.Key;
+                    Guid gradeId = gradePair.Value;
+
+                    foreach (var subjectPair in subjectIds)
+                    {
+                        string subjectCode = subjectPair.Key;
+                        Guid subjectId = subjectPair.Value;
+
+                        var topics = GetTopics(subjectCode, gradeNumber);
+
+                        foreach (var topic in topics)
+                        {
+                            lessons.Add(new DefaultLesson(
+                                Guid.NewGuid(),
+                                topic,
+                                $"Core lesson about {topic}",
+                                topic,
+                                gradeId,
+                                subjectId
+                            ));
+                        }
+                    }
+                }
+
+                context.AddRange(lessons);
             }
 
             // ====================

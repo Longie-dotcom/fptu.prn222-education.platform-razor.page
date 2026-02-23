@@ -1,6 +1,8 @@
 ﻿using DataAccessLayer.Interface;
 using DataAccessLayer.Persistence;
 using Domain.AcademicManagement.Aggregate;
+using Domain.AcademicManagement.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLayer.Implementation
 {
@@ -17,6 +19,14 @@ namespace DataAccessLayer.Implementation
         public SubjectRepository(EducationPlatformDBContext context) : base(context) { }
 
         #region Methods
+        public async Task<IEnumerable<DefaultLesson>> GetDefaultLessons(
+            Guid subjectId,
+            Guid gradeId)
+        {
+            return await context.Set<DefaultLesson>()
+                .Where(x => x.SubjectID == subjectId && x.GradeID == gradeId)
+                .ToListAsync();
+        }
         #endregion
     }
 }

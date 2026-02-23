@@ -171,6 +171,52 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("Subjects");
                 });
 
+            modelBuilder.Entity("Domain.AcademicManagement.Entity.DefaultLesson", b =>
+                {
+                    b.Property<Guid>("DefaultLessonID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("GradeID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Objectives")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("SubjectID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("SubjectID1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("DefaultLessonID");
+
+                    b.HasIndex("GradeID");
+
+                    b.HasIndex("SubjectID1");
+
+                    b.HasIndex("SubjectID", "GradeID");
+
+                    b.ToTable("DefaultLessons");
+                });
+
             modelBuilder.Entity("Domain.AuditManagement.Aggregate.AuditLog", b =>
                 {
                     b.Property<Guid>("AuditLogId")
@@ -290,8 +336,18 @@ namespace DataAccessLayer.Migrations
                     b.Property<Guid>("CourseID")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<bool>("IsViolated")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Objectives")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("Order")
                         .HasColumnType("int");
@@ -603,8 +659,27 @@ namespace DataAccessLayer.Migrations
                     b.HasOne("Domain.AIManagement.Entity.AIAssignment", null)
                         .WithOne("AISubmission")
                         .HasForeignKey("Domain.AIManagement.Entity.AISubmission", "AIAssignmentID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.AcademicManagement.Entity.DefaultLesson", b =>
+                {
+                    b.HasOne("Domain.AcademicManagement.Aggregate.Grade", null)
+                        .WithMany()
+                        .HasForeignKey("GradeID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.AcademicManagement.Aggregate.Subject", null)
+                        .WithMany()
+                        .HasForeignKey("SubjectID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.AcademicManagement.Aggregate.Subject", null)
+                        .WithMany("DefaultLessons")
+                        .HasForeignKey("SubjectID1");
                 });
 
             modelBuilder.Entity("Domain.CourseManagement.Aggregate.Course", b =>
@@ -840,6 +915,11 @@ namespace DataAccessLayer.Migrations
                 {
                     b.Navigation("AISubmission")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.AcademicManagement.Aggregate.Subject", b =>
+                {
+                    b.Navigation("DefaultLessons");
                 });
 
             modelBuilder.Entity("Domain.CourseManagement.Aggregate.Course", b =>

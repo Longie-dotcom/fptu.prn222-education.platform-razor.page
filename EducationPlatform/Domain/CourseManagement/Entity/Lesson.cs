@@ -1,5 +1,4 @@
 ﻿using Domain.DomainExceptions;
-using System.Net;
 
 namespace Domain.CourseManagement.Entity
 {
@@ -12,6 +11,8 @@ namespace Domain.CourseManagement.Entity
         #region Properties
         public Guid LessonID { get; private set; }
         public string Title { get; private set; }
+        public string Objectives { get; private set; }
+        public string Description { get; private set; }
         public string VideoUrl { get; private set; }
         public int Order { get; private set; }
         public bool IsViolated { get; private set; }
@@ -30,6 +31,8 @@ namespace Domain.CourseManagement.Entity
         public Lesson(
             Guid lessonId,
             string title,
+            string objectives,
+            string description,
             string videoUrl,
             int order,
             Guid courseId)
@@ -46,6 +49,10 @@ namespace Domain.CourseManagement.Entity
                 throw new DomainException(
                     "Lesson title is required");
 
+            if (string.IsNullOrWhiteSpace(objectives))
+                throw new DomainException(
+                    "Lesson objectives is required");
+
             if (string.IsNullOrWhiteSpace(videoUrl))
                 throw new DomainException(
                     "Lesson video URL is required");
@@ -56,6 +63,8 @@ namespace Domain.CourseManagement.Entity
 
             LessonID = lessonId;
             Title = title.Trim();
+            Objectives = objectives.Trim();
+            Description = description.Trim();
             VideoUrl = videoUrl.Trim();
             Order = order;
             CourseID = courseId;

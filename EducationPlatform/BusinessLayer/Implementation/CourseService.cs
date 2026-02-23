@@ -127,6 +127,8 @@ namespace BusinessLayer.Implementation
             {
                 var lesson = course.AddLesson(
                     lessonDto.Title,
+                    lessonDto.Objectives,
+                    lessonDto.Description,
                     lessonDto.VideoUrl,
                     lessonDto.Order);
 

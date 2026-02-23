@@ -1,0 +1,159 @@
+﻿@page
+@model PresentationLayer.Pages.Courses.ReviewCourseModel
+@using Domain.CourseManagement.Enum
+@{
+    ViewData["Title"] = "Admin Review: " + Model.VM.Course.Title;
+}
+
+<div style="display: grid; grid-template-columns: 1fr 400px; gap: 30px; max-width: 1600px; margin: 0 auto; padding: 40px 20px; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;">
+
+    <form method="post" style="display: contents;">
+        <input type="hidden" asp-for="VM.Course.CourseID" />
+        @* --- LEFT COLUMN: LESSON REVIEW --- *@
+        <div style="background: white; padding: 35px; border-radius: 24px; box-shadow: 0 4px 25px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
+
+            @* Course Briefing *@
+            <div style="display: flex; gap: 25px; margin-bottom: 40px; background: #fcfcfd; padding: 20px; border-radius: 16px; border: 1px solid #f1f1f1;">
+                <img src="~/media/@Model.VM.Course.ThumbnailName"
+                     style="width: 240px; height: 135px; border-radius: 12px; object-fit: cover; box-shadow: 0 8px 16px rgba(0,0,0,0.08);" />
+                <div style="flex: 1;">
+                    <span style="color: #4834d4; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;">Currently Reviewing</span>
+                    <h1 style="margin: 5px 0; font-size: 1.8rem; color: #1a202c;">@Model.VM.Course.Title</h1>
+                    <p style="color: #718096; font-size: 0.95rem; line-height: 1.5; margin-top: 8px;">@Model.VM.Course.Description</p>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 25px; color: #2d3436; font-size: 1.4rem; border-left: 5px solid #4834d4; padding-left: 15px;">Curriculum Content</h3>
+
+            @* LESSON LIST *@
+            @{
+                var orderedLessons = Model.VM.Course.Lessons
+                .OrderBy(l => l.Order)
+                .ToList();
+            }
+
+            @for (int i = 0; i < orderedLessons.Count; i++)
+            {
+                var lesson = orderedLessons[i];
+                bool isFlagged = lesson.IsViolated;
+
+                <div id="card-@i" style="border: 2px solid @(isFlagged ? "#feb2b2" : "#f1f5f9"); border-radius: 16px; padding: 25px; margin-bottom: 25px; background: @(isFlagged ? "#fffafb" : "#fff"); transition: 0.3s ease;">
+
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <div style="flex: 1;">
+                            @* Added Order and Item indicators *@
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                <span style="background: #4834d4; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                                    Order #@lesson.Order
+                                </span>
+                                <span style="font-size: 0.7rem; font-weight: 800; color: #a0aec0; text-transform: uppercase;">
+                                    — Item @(i + 1)
+                                </span>
+                            </div>
+                            <h4 style="margin: 0; font-size: 1.3rem; color: #2d3748;">@lesson.Title</h4>
+                        </div>
+
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 10px 18px; border-radius: 12px; border: 1px solid @(isFlagged ? "#feb2b2" : "#e2e8f0"); transition: 0.2s;"
+                               onmouseover="this.style.borderColor='#feb2b2'; this.style.background='#fff5f5'"
+                               onmouseout="this.style.borderColor='@(isFlagged ? "#feb2b2" : "#e2e8f0")'; this.style.background='@(isFlagged ? "#fff5f5" : "#f8fafc")'">
+                            <input type="checkbox" class="lesson-toggle" data-index="@i" @(isFlagged ? "checked" : "")
+                                   style="width: 20px; height: 20px; accent-color: #e53e3e; cursor: pointer;" />
+                            <span style="font-weight: 700; color: #4a5568; font-size: 0.9rem;">Flag Violation</span>
+                        </label>
+                    </div>
+
+                    <div style="background: #000; border-radius: 12px; overflow: hidden; line-height: 0;">
+                        <video style="width: 100%; max-height: 450px;" controls preload="metadata">
+                            <source src="@Url.Content($"~/media/{lesson.VideoUrl}")" type="video/mp4">
+                        </video>
+                    </div>
+
+                    @* VIOLATION INPUTS *@
+                    <div id="violation-inputs-@i" style="display: @(isFlagged ? "block" : "none"); margin-top: 25px; padding-top: 20px; border-top: 2px dashed #fed7d7;">
+                        <input type="hidden" name="VM.ViolatedLessons.Index" value="@i" @(isFlagged ? "" : "disabled") class="lesson-input-group" />
+                        <input type="hidden" name="VM.ViolatedLessons[@i].LessonID" value="@lesson.LessonID" @(isFlagged ? "" : "disabled") class="lesson-input-group" />
+
+                        <div style="background: #fff5f5; padding: 20px; border-radius: 12px; border: 1px solid #feb2b2;">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #c53030; margin-bottom: 10px; text-transform: uppercase;">Lesson Violation Details</label>
+                            <textarea name="VM.ViolatedLessons[@i].AdminNote" @(isFlagged ? "" : "disabled") class="lesson-input-group"
+                                  placeholder="Explain why this specific lesson is being flagged..."
+                                  style="width: 100%; height: 100px; padding: 15px; border-radius: 10px; border: 1px solid #feb2b2; resize: none; font-family: inherit; font-size: 0.95rem; box-sizing: border-box;">@lesson.AdminNote</textarea>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* --- RIGHT COLUMN: DECISION PANEL --- *@
+        <aside>
+            <div style="position: sticky; top: 20px; background: white; padding: 35px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+                <h3 style="margin: 0 0 10px 0; color: #1a202c; font-size: 1.6rem;">Review Decision</h3>
+                <p style="color: #718096; font-size: 0.9rem; margin-bottom: 30px;">Select applicable policies and leave a final note.</p>
+
+                @* Policy Checklist *@
+                <div style="margin-bottom: 30px;">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #4a5568; margin-bottom: 15px; text-transform: uppercase;">Policy Infringements</label>
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eef2f7; border-radius: 15px; padding: 10px; background: #fcfdfe;">
+                        @foreach (var policy in Model.VM.Policies)
+                        {
+                            bool isCurrentlyViolated = Model.VM.Course.ViolatedPolicies.Any(vp => vp.PolicyID == policy.PolicyID);
+
+                            <label style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; cursor: pointer; border-radius: 10px; transition: 0.2s;"
+                                   onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="VM.SelectedViolatedPolicyIDs" value="@policy.PolicyID" @(isCurrentlyViolated ? "checked" : "")
+                                       style="margin-top: 4px; width: 18px; height: 18px; accent-color: #4834d4;" />
+                                <span style="font-size: 0.95rem; color: #2d3748; line-height: 1.4;">@policy.Name</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                @* Final Note *@
+                <div style="margin-bottom: 30px;">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #4a5568; margin-bottom: 15px; text-transform: uppercase;">Overall Admin Feedback</label>
+                    <textarea asp-for="VM.AdminNote" placeholder="Summary message to the teacher..."
+                              style="width: 100%; height: 160px; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 1rem; box-sizing: border-box; transition: 0.2s;"
+                              onfocus="this.style.borderColor='#4834d4'; this.style.boxShadow='0 0 0 4px rgba(72, 52, 212, 0.1)'; this.style.outline='none'"
+                              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'"></textarea>
+                </div>
+
+                <button type="submit"
+                        style="border: 1px solid #4834d4; color: #4834d4; background: transparent; width: 100%; padding: 4%; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; text-align: center; cursor: pointer"
+                        onmouseover="this.style.backgroundColor='#4834d4'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4834d4';">
+                    Submit Final Review
+                </button>
+
+                <div style="margin-top: 25px; padding: 15px; background: #fffaf0; border-radius: 12px; border: 1px solid #feebc8; display: flex; gap: 10px;">
+                    <span style="font-size: 1.2rem;">💡</span>
+                    <p style="font-size: 0.8rem; color: #7b341e; margin: 0; line-height: 1.4;">
+                        <strong>Note:</strong> Purple labels show the lesson's defined order. Red cards indicate previously flagged violations.
+                    </p>
+                </div>
+            </div>
+        </aside>
+    </form>
+</div>
+
+<script>
+    document.querySelectorAll('.lesson-toggle').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const index = this.getAttribute('data-index');
+            const container = document.getElementById(`violation-inputs-${index}`);
+            const card = document.getElementById(`card-${index}`);
+            const inputs = container.querySelectorAll('.lesson-input-group');
+
+            if (this.checked) {
+                container.style.display = 'block';
+                card.style.borderColor = '#feb2b2';
+                card.style.backgroundColor = '#fffafb';
+                inputs.forEach(input => input.disabled = false);
+            } else {
+                container.style.display = 'none';
+                card.style.borderColor = '#f1f5f9';
+                card.style.backgroundColor = '#ffffff';
+                inputs.forEach(input => input.disabled = true);
+            }
+        });
+    });
+</script>

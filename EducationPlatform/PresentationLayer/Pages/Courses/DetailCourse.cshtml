@@ -1,0 +1,277 @@
+﻿@page "{id:guid}"
+@model PresentationLayer.Pages.Courses.DetailCourseModel
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Course Detail";
+    var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+}
+
+<div style="max-width: 1000px; margin: 30px auto; font-family: 'Segoe UI', Arial, sans-serif; color: #2d3436; line-height: 1.6;">
+
+    @* --- REVIEW ACTION FOR ADMIN --- *@
+    @if (userRole == "Admin")
+    {
+        <div style="margin-bottom: 30px; padding: 20px; background: #f8faff; border: 1px dashed #4834d4; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0; color: #4834d4;">Administrative Actions</h4>
+                <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #636e72;">Review this course content and quizzes for policy compliance.</p>
+            </div>
+            <a asp-page="ReviewCourse" asp-route-id="@Model.Course.CourseID"
+               style="text-decoration: none; border: 1px solid #4834d4; color: #4834d4; width: 15%; padding: 1.5%; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; text-align: center;"
+               onmouseover="this.style.backgroundColor='#4834d4'; this.style.color='white';"
+               onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4834d4';">
+                Start Course Review
+            </a>
+        </div>
+    }
+
+    @* --- ENROLL ACTION FOR STUDENT --- *@
+    @if (userRole == "Student")
+    {
+        <div style="margin-bottom: 30px; padding: 20px; background: #f8faff; border: 1px dashed #4834d4; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0; color: #4834d4; font-size: 1.1rem; font-weight: 700;">Ready to start learning?</h4>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #636e72;">Enroll now to get lifetime access to all lessons and quizzes.</p>
+            </div>
+
+            <form asp-page="/Orders/ListOrder" asp-page-handler="CreateOrder" method="post" style="width: 10%">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="courseId" value="@Model.Course.CourseID" />
+
+                <button type="submit"
+                        style="text-decoration: none; border: 1px solid #4834d4; color: #4834d4; width: 100%; padding: 7%; margin: 1%; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; text-align: center;"
+                        onmouseover="this.style.backgroundColor='#4834d4'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4834d4';">
+                    Enroll Now
+                </button>
+            </form>
+        </div>
+    }
+
+    @* Course Header Section *@
+    <div style="display: flex; gap: 30px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px;">
+        <div style="flex: 0 0 300px;">
+            @if (!string.IsNullOrEmpty(Model.Course.ThumbnailName))
+            {
+                <img src="~/media/@Model.Course.ThumbnailName" alt="Thumbnail" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;" />
+            }
+            else
+            {
+                <div style="width: 100%; height: 200px; background: #f1f2f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #a4b0be;">No Image</div>
+            }
+        </div>
+
+        <div style="flex: 1;">
+            <h1 style="margin: 0 0 15px 0; color: #4834d4; font-size: 2rem;">@Model.Course.Title</h1>
+            <p style="margin-bottom: 20px; color: #636e72;">@Model.Course.Description</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.95rem;">
+                <span><strong>Teacher:</strong> @Model.Course.Teacher.Name</span>
+                <span><strong>Grade:</strong> @Model.Course.Grade.Name</span>
+                <span><strong>Subject:</strong> @Model.Course.Subject.Name</span>
+                <span><strong>Price:</strong> <span style="color: #27ae60; font-weight: bold;">@(Model.Course.Price?.ToString("N0") ?? "Free") VND</span></span>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Course.Status == "Rejected")
+    {
+        <div style="background: #fff5f5; border-left: 5px solid #f56565; padding: 15px; margin-bottom: 30px; border-radius: 4px;">
+            <strong style="color: #c53030;">Course Rejected</strong>
+            <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Date: @Model.Course.RejectedAt?.ToString("yyyy-MM-dd HH:mm")</p>
+        </div>
+    }
+
+    <h3 style="border-bottom: 2px solid #4834d4; padding-bottom: 10px; margin-bottom: 20px;">Course Content</h3>
+
+    @if (Model.Course.Lessons.Any())
+    {
+        @foreach (var lesson in Model.Course.Lessons.OrderBy(l => l.Order))
+        {
+            @* LESSON CONTAINER *@
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 25px; overflow: hidden;">
+
+                @* 1. CLICKABLE LESSON HEADER *@
+                <div onclick="toggleSection('lesson-content-@lesson.Order')"
+                     style="background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+                    <span style="font-weight: 700; color: #4834d4;">
+                        Lesson @lesson.Order: @lesson.Title
+                    </span>
+                    <button style="background: #f1f2f6; border: 1px solid #dfe4ea; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; color: #4834d4; font-weight: 600;">
+                        Show/Hide Lesson
+                    </button>
+                </div>
+
+                @* 2. COLLAPSIBLE LESSON CONTENT *@
+                <div id="lesson-content-@lesson.Order" style="padding: 20px; display: none;">
+                    @* Lesson Description *@
+                    <div>
+                        <h5 style="margin: 0 0 10px 0; color: #4a5568; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Description</h5>
+                        <p style="margin: 0; color: #2d3436; font-size: 0.95rem; background: #fcfcfc; padding: 12px; border-radius: 8px; border: 1px solid #f1f5f9;">
+                            @(string.IsNullOrEmpty(lesson.Description) ? "No description provided." : lesson.Description)
+                        </p>
+                    </div>
+
+                    @* Learning Objectives *@
+                    <div>
+                        <h5 style="margin: 0 0 10px 0; margin-top: 20px; color: #4a5568; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Learning Objectives</h5>
+                        <p style="margin: 0; color: #2d3436; font-size: 0.95rem; background: #fcfcfc; padding: 12px; border-radius: 8px; border: 1px solid #f1f5f9;">
+                            @(string.IsNullOrEmpty(lesson.Objectives) ? "No objectives provided." : lesson.Objectives)
+                        </p>
+                    </div>
+
+                    @* --- VIOLATION STATUS SECTION --- *@
+                    <div style="margin-bottom: 20px; margin-top: 20px; padding: 15px; border-radius: 8px; border: 1px solid @(lesson.IsViolated ? "#feb2b2" : "#e2e8f0"); background: @(lesson.IsViolated ? "#fff5f5" : "#f8f9fa");">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: @(!string.IsNullOrEmpty(lesson.AdminNote) ? "10px" : "0")">
+                            <span style="height: 12px; width: 12px; background-color: @(lesson.IsViolated ? "#f56565" : "#27ae60"); border-radius: 50%; display: inline-block;"></span>
+                            <strong style="color: @(lesson.IsViolated ? "#c53030" : "#2d3436");">
+                                Status: @(lesson.IsViolated ? "Policy Violation Detected" : "Clear")
+                            </strong>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(lesson.AdminNote))
+                        {
+                            <div style="font-size: 0.9rem; color: #4a5568; padding-top: 10px; border-top: 1px solid @(lesson.IsViolated ? "#fed7d7" : "#edf2f7");">
+                                <strong>Admin Note:</strong> @lesson.AdminNote
+                            </div>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(lesson.VideoUrl))
+                    {
+                        <div style="margin-bottom: 20px; background: #000; border-radius: 8px; overflow: hidden; line-height: 0;">
+                            <video src="@Url.Content($"~/media/{lesson.VideoUrl}")" style="width: 100%; max-height: 450px;" controls>
+                                Your browser does not support video playback.
+                            </video>
+                        </div>
+                    }
+
+                    @if (lesson.Quizzes.Any())
+                    {
+                        <div style="margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h5 style="margin: 0; color: #2d3436; font-size: 1.1rem; border-left: 3px solid #4834d4; padding-left: 10px;">Practice Quizzes</h5>
+                                <button onclick="toggleSection('quiz-list-@lesson.Order')"
+                                        style="background: #f1f2f6; border: 1px solid #dfe4ea; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; color: #4834d4; font-weight: 600;">
+                                    Show/Hide Quizzes
+                                </button>
+                            </div>
+
+                            <div id="quiz-list-@lesson.Order" style="display: none;">
+                                @foreach (var quiz in lesson.Quizzes)
+                                {
+                                    // SPLIT CORRECT ANSWERS: If it's a string like "A, B", turn it into a list
+                                    var correctAnswers = quiz.Answer.CorrectAnswers != null
+                                    ? quiz.Answer.CorrectAnswers.SelectMany(a => a.Split(',')).Select(s => s.Trim()).ToList()
+                                    : new List<string>();
+
+                                    // SPLIT OPTIONS: (Keep your existing logic, but ensure it's clean)
+                                    var displayOptions = new List<string>();
+                                    if (quiz.Answer.Type == Domain.CourseManagement.Enum.QuizType.TrueFalse)
+                                    {
+                                        displayOptions = new List<string> { "True", "False" };
+                                    }
+                                    else if (quiz.Answer.Options != null)
+                                    {
+                                        displayOptions = quiz.Answer.Options
+                                        .SelectMany(o => o.Split(','))
+                                        .Select(s => s.Trim())
+                                        .Where(s => !string.IsNullOrEmpty(s))
+                                        .ToList();
+                                    }
+
+                                    <div style="background: #fdfdfd; border: 1px solid #edf2f7; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                                        <div style="margin-bottom: 15px;">
+                                            <span style="background: #ebf4ff; color: #4c51bf; padding: 3px 10px; border-radius: 5px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-right: 10px;">
+                                                @quiz.Answer.Type
+                                            </span>
+                                            <strong style="font-size: 1.05rem; color: #2d3436;">@quiz.Question</strong>
+                                        </div>
+
+                                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                                            @foreach (var opt in displayOptions)
+                                            {
+                                                var isCorrect = correctAnswers.Any(ca => ca.Trim().Equals(opt.Trim(), StringComparison.OrdinalIgnoreCase));
+                                                var inputType = (quiz.Answer.Type == Domain.CourseManagement.Enum.QuizType.MultipleChoice) ? "checkbox" : "radio";
+
+                                                <label style="display: flex; align-items: center; gap: 12px; padding: 10px 15px; border-radius: 8px; border: 1px solid @(isCorrect ? "#27ae60" : "#e2e8f0"); background: @(isCorrect ? "#f0fff4" : "#fff");">
+                                                    <input type="@inputType" disabled @(isCorrect ? "checked" : "") style="width: 18px; height: 18px; accent-color: #27ae60;" />
+                                                    <span style="font-size: 0.95rem; color: @(isCorrect ? "#1e7e34" : "#4a5568");">@opt</span>
+                                                    @if (isCorrect)
+                                                    {
+                                                        <span style="margin-left: auto; font-size: 0.75rem; color: #27ae60; font-weight: bold;">✔ Correct</span>
+                                                    }
+                                                </label>
+                                            }
+                                        </div>
+
+                                        @if (!string.IsNullOrEmpty(quiz.Note))
+                                        {
+                                            <div style="margin-top: 15px; padding: 12px; background: #fffaf0; border-left: 4px solid #ed8936; border-radius: 4px; font-size: 0.85rem; color: #7b341e;">
+                                                <strong>Note:</strong> @quiz.Note
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else if (userRole == "Student")
+    {
+        @* MESSAGE FOR STUDENTS (CURRICULUM PREVIEW) *@
+        <div style="background: #f8faff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 40px; text-align: center; margin-top: 20px;">
+            <div style="font-size: 3rem; margin-bottom: 15px;">📚</div>
+            <h3 style="color: #4834d4; margin-bottom: 10px;">Course is Locked</h3>
+            <p style="color: #636e72; max-width: 500px; margin: 0 auto 20px auto;">
+                The full course curriculum, including lessons with videos, and interactive quizzes, is available to enrolled students only.
+            </p>
+            <p style="font-weight: 600; color: #2d3436;">Enroll today to start your learning journey!</p>
+        </div>
+    }
+    else
+    {
+        @* MESSAGE WHEN THERE ARE NO LESSONS AT ALL *@
+        <div style="padding: 30px; text-align: center; background: #fff; border: 1px solid #eee; border-radius: 12px;">
+            <p style="color: #a4b0be; font-style: italic;">No lessons have been added to this course yet.</p>
+        </div>
+    }
+
+    @* Policy Violations Section *@
+    @if (Model.Course.ViolatedPolicies?.Any() == true)
+    {
+        <div style="margin-top: 40px; padding: 25px; background: white; border-radius: 12px; border: 1px solid #feb2b2; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.05);">
+            <h3 style="color: #c53030; margin-top: 0; font-size: 1.2rem;">⚠️ Policy Violations detected</h3>
+            <ul style="list-style: none; padding: 0; margin: 20px 0;">
+                @foreach (var vp in Model.Course.ViolatedPolicies)
+                {
+                    <li style="margin-bottom: 12px; padding: 12px 20px; border-left: 5px solid #c53030; color: #c53030; font-weight: 600; background: #fff5f5;">
+                        @vp.Policy.Name
+                    </li>
+                }
+            </ul>
+
+            @if (!string.IsNullOrEmpty(Model.Course.AdminNote))
+            {
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+                    <strong style="color: #4a5568; font-size: 0.75rem; text-transform: uppercase;">Reviewer Comments</strong>
+                    <p style="margin-top: 10px; color: #2d3436; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">@Model.Course.AdminNote</p>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<script>
+    function toggleSection(elementId) {
+        const content = document.getElementById(elementId);
+        if (content.style.display === "none" || content.style.display === "") {
+            content.style.display = "block";
+        } else {
+            content.style.display = "none";
+        }
+    }
+</script>

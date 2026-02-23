@@ -56,4 +56,14 @@ namespace BusinessLayer.DTO
         public Guid QuizID { get; set; }
         public QuizDTO Quiz { get; set; } = new QuizDTO();
     }
+
+    public class StudentWeaknessDTO
+    {
+        public Guid CourseId { get; set; }
+        public string CourseTitle { get; set; } = string.Empty;
+        public Guid LessonId { get; set; }
+        public string LessonTitle { get; set; } = string.Empty;
+        public decimal CompletionRate { get; set; }
+        public int FailedQuizCount { get; set; }
+    }
 }

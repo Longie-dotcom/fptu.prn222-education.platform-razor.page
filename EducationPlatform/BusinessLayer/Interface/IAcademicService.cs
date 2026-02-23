@@ -7,5 +7,9 @@ namespace BusinessLayer.Interface
         Task<IEnumerable<SubjectDTO>> GetSubjects();
 
         Task<IEnumerable<GradeDTO>> GetGrades();
+
+        Task<IEnumerable<DefaultLessonDTO>> GetDefaultLessons(
+            Guid subjectId,
+            Guid gradeId);
     }
 }
